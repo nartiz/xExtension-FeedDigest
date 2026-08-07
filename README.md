@@ -7,7 +7,6 @@ Automatically summarize newly retrieved RSS articles using LLM APIs (OpenAI-comp
 - 🤖 **Automatic Summarization**: Processes unread articles using LLM APIs during scheduled feed updates
 - 🌍 **Multi-language**: Translates article titles and summaries to your chosen language
 - ⚡ **Efficient Batch Processing**: Summarizes multiple articles in a single API call to reduce costs
-- 🔄 **Auto-retry**: Failed API calls automatically retry on the next feed update
 - 📊 **Per-feed Control**: Enable/disable summarization and configure batch size for each feed individually
 - 🎯 **Smart Filtering**: Skips image-only and too-short articles, adds explanatory notes
 - 🎨 **Clean Output**: Creates formatted summary articles with links to originals
@@ -47,8 +46,8 @@ Required settings:
   - Never share or commit this key to version control
 
 - **Model Name**: The LLM model to use
-  - OpenAI: `gpt-5-nano` (recommended for cost), `gpt-4o-mini`, `gpt-4o`
-  - Claude: `claude-3-5-sonnet-20241022`, `claude-3-haiku-20240307`
+  - OpenAI: `gpt-5.6-luna` (recommended for current-generation, high-volume workloads), `gpt-5.6-terra` (higher quality)
+  - Claude (through an OpenAI-compatible provider): `claude-haiku-4-5` or the pinned `claude-haiku-4-5-20251001`
   - Other: Check your provider's model names
 
 - **Destination Language**: Target language for summaries and translations
@@ -81,13 +80,13 @@ To enable summarization for a specific feed:
 
 ```
 Endpoint: https://api.openai.com/v1
-Model: gpt-5-nano
+Model: gpt-5.6-luna
 Key: sk-...
 ```
 
 ### Anthropic Claude (via OpenAI-compatible wrappers)
 
-Many services provide OpenAI-compatible endpoints for Claude. Check your provider's documentation.
+This extension currently uses OpenAI's Chat Completions request format, not Anthropic's native Messages API. To use Claude, configure an OpenAI-compatible provider or gateway and use its endpoint and model name. Claude Haiku 4.5 (`claude-haiku-4-5`) is a fast, cost-efficient option; verify the exact model identifier and pricing with your provider.
 
 ### Local Models (Ollama, LM Studio, etc.)
 
@@ -101,7 +100,7 @@ Key: not-needed  # Often not required for local models
 
 ```
 Endpoint: https://openrouter.ai/api/v1
-Model: anthropic/claude-3.5-sonnet
+Model: anthropic/claude-haiku-4.5
 Key: sk-or-v1-...
 ```
 
@@ -151,16 +150,25 @@ fastcgi_read_timeout 300;
 
 ## Cost Estimation
 
-API costs vary by provider and model. Using `gpt-5-nano` (recommended):
+API costs vary by provider, model, tokenization, and response length. The estimates below use standard list prices as of August 2026 and assume a typical batch of 10 articles at the default maximum of 4,000 characters each:
 
-**Typical usage** (10 articles per batch, 4000 chars each):
-- **Cost per batch: ~$0.001**
+- Approximately 40,000 input characters, estimated as 16,000 input tokens
+- Approximately 1,000 output tokens for 10 translated titles and summaries
+
+| Model | Input / 1M tokens | Output / 1M tokens | Estimated cost per batch |
+| --- | ---: | ---: | ---: |
+| `gpt-5.6-luna` (recommended) | $1.00 | $6.00 | ~$0.022 |
+| `gpt-5.6-terra` | $2.50 | $15.00 | ~$0.055 |
+| Claude Haiku 4.5 | $1.00 | $5.00 | ~$0.021 |
 
 **Example scenario**: 5 feeds, each with 20 unread articles/day, batch size 10:
 - 5 feeds × 2 batches/day = 10 batches/day
-- **Cost: ~$0.01/day or ~$0.30/month**
+- With `gpt-5.6-luna`: **~$0.22/day or ~$6.60/month**
+- With Claude Haiku 4.5 at Anthropic list prices: **~$0.21/day or ~$6.30/month**
 
-> **Tip**: `gpt-5-nano` offers the best cost-performance ratio for RSS summarization
+Actual usage is often lower because many articles are shorter than the configured maximum. Gateway pricing, reasoning tokens, cached tokens, retries, taxes, and provider-specific fees can change the total. Check the [OpenAI model pricing](https://developers.openai.com/api/docs/models) and [Anthropic model pricing](https://platform.claude.com/docs/en/about-claude/models/overview) before deployment.
+
+> **Tip**: Start with `gpt-5.6-luna` for current-generation quality at high volume. Claude Haiku 4.5 is a similarly priced alternative when used through an OpenAI-compatible provider.
 
 ## Troubleshooting
 
@@ -192,7 +200,7 @@ API costs vary by provider and model. Using `gpt-5-nano` (recommended):
 
 ### High API Costs
 
-1. Use `gpt-5-nano` for the best cost-performance ratio
+1. Use `gpt-5.6-luna` or Claude Haiku 4.5 for cost-sensitive workloads
 2. Reduce "Articles per summary batch" for feeds (processes fewer articles at once)
 3. Lower "Max Content Length" to send less data per article
 4. Enable summarization only for high-value feeds

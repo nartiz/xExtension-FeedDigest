@@ -691,7 +691,7 @@ PROMPT;
 		}
 
 		// Use original article's date but generate unique ID
-		$timestamp = $originalEntry->date();
+		$timestamp = $originalEntry->date(true);
 		$guid = 'llm-translated-' . $originalEntry->id() . '-' . time();
 
 		// Prepare entry data
