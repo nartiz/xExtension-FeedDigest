@@ -361,6 +361,8 @@ final class FeedDigestExtension extends Minz_Extension {
 			'model' => $model,
 			// Fork: keep the model out of reasoning/thinking mode (Ollama/OpenAI-compatible backends)
 			'reasoning_effort' => 'none',
+			// Fork: low temperature for consistent format compliance (summaries, not prose)
+			'temperature' => 0.3,
 			// Fork: force valid JSON output and cap the response (length scales with article substance)
 			'response_format' => ['type' => 'json_object'],
 			'max_tokens' => 1000,
