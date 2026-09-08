@@ -14,6 +14,9 @@ declare(strict_types=1);
  *   "ai-summary-<source entry id>", so retries and read-state toggles never
  *   produce duplicate summaries.
  * - LLM requests send "reasoning_effort: none" to avoid hidden reasoning overhead.
+ * - Backfill is newest-first and bounded to the last N days ("backfill_days",
+ *   default 7) so enabling a feed summarizes its recent unread posts, not its
+ *   whole history; new posts always fall inside the window.
  */
 final class FeedDigestExtension extends Minz_Extension {
 
@@ -156,14 +159,34 @@ final class FeedDigestExtension extends Minz_Extension {
 			// Fork: per-article summaries only (batch = 1)
 			$batchSize = 1;
 
-			// Fetch plenty of articles (max 200)
-			$fetchLimit = 200;
+			// Fork: newest-first, bounded to the recent backfill window. Enabling a
+			// feed summarizes its recent unread posts (not its whole history); new
+			// posts always fall inside the window; ancient backlog stays unread.
+			$backfillDays = (int)$this->getSystemConfigurationValue('backfill_days', 7);
+			$cutoff = $backfillDays > 0 ? (time() - $backfillDays * 86400) : 0;
+			// Per-pass safety bound so one actualize run finishes within the 30-min
+			// cron interval (no overlapping maintenance hooks).
+			$fetchLimit = max(1, (int)$this->getSystemConfigurationValue('backfill_limit', 100));
 
 			// Get unread articles for this feed
 			$entries = iterator_to_array(
 				$entryDAO->listWhere('f', $feed->id(), FreshRSS_Entry::STATE_NOT_READ,
-				                    order: 'ASC', limit: $fetchLimit)
+				                    sort: 'date', order: 'DESC', limit: $fetchLimit)
 			);
+
+			// Apply the backfill window. Entries are ordered newest-first, so once
+			// we reach an entry older than the cutoff, every following one is older
+			// too (date=0/unknown entries sort last), so we can stop there.
+			if ($cutoff > 0) {
+				$kept = [];
+				foreach ($entries as $candidate) {
+					if ((int)$candidate->date(true) < $cutoff) {
+						break;
+					}
+					$kept[] = $candidate;
+				}
+				$entries = $kept;
+			}
 
 			// Skip if no unread articles
 			if (empty($entries)) {
