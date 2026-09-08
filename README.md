@@ -14,8 +14,8 @@ Built for a local LLM (Ollama + Qwen) but works with any OpenAI-compatible API.
 | Skipped articles | "Not summarized" note written into the article | **Untouched**: left unread, silently re-evaluated (zero LLM cost) |
 | Idempotency | Summary detection by feed/title heuristics | Deterministic guid `ai-summary-<source entry id>` — a source can never get two summaries, and read-state toggles never trigger re-summarization |
 | Long articles | batch=1 path hard-codes a 50,000-char limit | Honors the configured `max_content_length` (default 4000) before prompt construction |
-| LLM payload | Plain chat completion | `reasoning_effort: none` (no hidden reasoning overhead), `response_format: json_object` (strict JSON), `max_tokens: 500` |
-| Summary style | 2–4 sentences | Idea-dense: every sentence carries a distinct idea, no filler; typically 3–6 sentences |
+| LLM payload | Plain chat completion | `reasoning_effort: none` (no hidden reasoning overhead), `response_format: json_object` (strict JSON), `max_tokens: 1000` |
+| Summary style | 2–4 sentences | Idea- and conclusion-conveying, never an outline; length scales with the article's substance (no fixed sentence cap) |
 
 ## Behavior
 
