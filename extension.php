@@ -359,6 +359,9 @@ final class FeedDigestExtension extends Minz_Extension {
 			'model' => $model,
 			// Fork: keep the model out of reasoning/thinking mode (Ollama/OpenAI-compatible backends)
 			'reasoning_effort' => 'none',
+			// Fork: force valid JSON output and cap the response (summaries are 2-4 sentences)
+			'response_format' => ['type' => 'json_object'],
+			'max_tokens' => 500,
 			'messages' => [
 				['role' => 'system', 'content' => $systemPrompt],
 				['role' => 'user', 'content' => $userPrompt]
