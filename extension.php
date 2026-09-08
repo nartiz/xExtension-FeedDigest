@@ -715,7 +715,7 @@ PROMPT;
 		$values = [
 			'id' => uTimeString(),
 			'guid' => $guid,
-			'title' => 'Summary: ' . $originalEntry->title(),
+			'title' => 'Summary: ' . $originalEntry->title() . ' (' . $sourceFeed->name() . ')',
 			'author' => 'AI Summary',
 			'content' => $content,
 			'link' => $originalEntry->link(),
