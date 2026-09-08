@@ -227,7 +227,7 @@ final class FeedDigestExtension extends Minz_Extension {
 					Minz_Log::notice("Feed Digest: Processing {$feed->name()} batch #{$batchNumber} - {$batchSize} articles");
 
 					if ($batchSize === 1) {
-						$this->processTranslation($feed, $batch, $apiEndpoint, $secretKey, $model, $destLanguage, $summariesFeed);
+						$this->processTranslation($feed, $batch, $apiEndpoint, $secretKey, $model, $destLanguage, $summariesFeed, $maxContentLength);
 						Minz_Log::notice("Feed Digest: Summarized {$feed->name()} batch #{$batchNumber} into AI Summaries");
 					} else {
 						$this->processSummary($feed, $batch, $apiEndpoint, $secretKey, $model, $destLanguage, $maxContentLength);
@@ -469,10 +469,12 @@ final class FeedDigestExtension extends Minz_Extension {
 	 *
 	 * Creates a summary-only entry in the dedicated AI Summaries feed.
 	 * The source entry is left completely untouched (content and read state).
+	 * Article content is truncated to the configured max_content_length before
+	 * the prompt is built, so the prompt always fits the model context window.
 	 */
 	private function processTranslation(FreshRSS_Feed $feed, array $entries, string $apiEndpoint,
 	                                    string $secretKey, string $model, string $destLanguage,
-	                                    FreshRSS_Feed $summariesFeed): void {
+	                                    FreshRSS_Feed $summariesFeed, int $maxContentLength): void {
 		// Build summary system prompt
 		$feedTitle = htmlspecialchars($feed->name(), ENT_QUOTES, 'UTF-8');
 
@@ -495,9 +497,11 @@ Respond with a single JSON object:
 IMPORTANT: Return ONLY the JSON object, no other text.
 PROMPT;
 
-		// Encode the single article with 50k limit and preserved paragraphs
+		// Encode the single article. Truncate to the configured max_content_length
+		// BEFORE building the prompt so the prompt always fits the model context
+		// window (the same budget the batch>1 path already honors).
 		$entry = $entries[0];
-		$articlesJson = $this->encodeArticlesForAPI($entries, 50000, true);
+		$articlesJson = $this->encodeArticlesForAPI($entries, $maxContentLength, true);
 		$userPrompt = "Article to summarize:\n\n" . $articlesJson;
 
 		// Make API request
