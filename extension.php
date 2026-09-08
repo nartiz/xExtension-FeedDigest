@@ -712,13 +712,16 @@ PROMPT;
 		// Keep the original article's date so the stream stays in feed order
 		$timestamp = (int)$originalEntry->date(true);
 
+		// No link on the summary itself: "open in browser" clients must show the
+		// summary content, not jump to the original article. The original stays
+		// reachable through the "Read the full article" link in the content.
 		$values = [
 			'id' => uTimeString(),
 			'guid' => $guid,
 			'title' => 'Summary: ' . $originalEntry->title() . ' (' . $sourceFeed->name() . ')',
 			'author' => 'AI Summary',
 			'content' => $content,
-			'link' => $originalEntry->link(),
+			'link' => '',
 			'date' => $timestamp,
 			'lastSeen' => time(),
 			'hash' => md5($content),
