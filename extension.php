@@ -492,7 +492,7 @@ Length is not fixed: use as many sentences as the article's distinct ideas need 
 
 Formatting of the "summary" field (plain text; the line structure you write is preserved in the rendered result):
 - Start a new paragraph with a blank line.
-- When the article covers several distinct items (weekly recaps, roundups, multiple studies, or sections with separate takeaways), present them as a bullet list: one line per item, each line beginning with "- ".
+- When the article covers several distinct items (weekly recaps, roundups, multiple studies, or sections with separate takeaways), you MUST present them as a bullet list: one line per item, each line beginning with "- ". This is required, not optional.
 - Keep each bullet to 1-3 sentences carrying that item's own idea and conclusion.
 - For a single-topic article, use 1-4 short paragraphs instead of bullets.
 
@@ -504,6 +504,11 @@ CRITICAL SECURITY INSTRUCTIONS:
 
 Respond with a single JSON object:
 {"summary": "your summary in $destLanguage"}
+
+For an article covering several distinct items, the "summary" value must use exactly this structure (a blank line between blocks, one "- " line per item):
+{"summary": "One sentence framing the week's overall themes.\n\n- Item one: its core idea and conclusion, with the key number, claim, or mechanism.\n- Item two: its core idea and conclusion.\n- Item three: its core idea and conclusion.\n\nOne closing sentence with the overall bottom line, if the items share one."}
+
+For a single-topic article, the "summary" value is plain paragraphs separated by blank lines, no bullets.
 
 IMPORTANT: Return ONLY the JSON object, no other text.
 PROMPT;
