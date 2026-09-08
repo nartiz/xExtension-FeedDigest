@@ -15,7 +15,7 @@ Built for a local LLM (Ollama + Qwen) but works with any OpenAI-compatible API.
 | Idempotency | Summary detection by feed/title heuristics | Deterministic guid `ai-summary-<source entry id>` — a source can never get two summaries, and read-state toggles never trigger re-summarization |
 | Long articles | batch=1 path hard-codes a 50,000-char limit | Honors the configured `max_content_length` (default 4000) before prompt construction |
 | LLM payload | Plain chat completion | `reasoning_effort: none` (no hidden reasoning overhead), `response_format: json_object` (strict JSON), `max_tokens: 1000` |
-| Summary style | 2–4 sentences | Idea- and conclusion-conveying, never an outline; length scales with the article's substance (no fixed sentence cap) |
+| Summary style | 2–4 sentences | Idea- and conclusion-conveying, never an outline; length scales with the article's substance (no fixed sentence cap); multi-item articles render as a bullet list, single-topic as short paragraphs |
 
 ## Behavior
 
@@ -24,7 +24,8 @@ Built for a local LLM (Ollama + Qwen) but works with any OpenAI-compatible API.
   - text too short / image-only → skipped, untouched, re-checked on later passes;
   - otherwise one API call → a summary-only entry is created in the AI Summaries feed:
     - title: `Summary: <original title> (<source feed name>)`
-    - content: the summary text, a "Read the full article" link, and a `Source: <feed> — <title>` line
+    - content: the structured summary (paragraphs + `"- "` bullets → safe HTML), a "Read the full article" link, and a `Source: <feed> — <title>` line
+    - a response truncated at `max_tokens` (unclosed JSON) is recovered as a partial summary rather than silently failing forever
     - date: the original article's date, so the stream stays in feed order
     - guid: `ai-summary-<source entry id>` (stable across retries)
 - The AI Summaries feed/category is created deterministically on first use (`internal://ai-summaries`, 1-year TTL so it is never fetched) and never recreated.
