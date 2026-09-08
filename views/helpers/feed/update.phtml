@@ -31,7 +31,7 @@ $our_fields = '
 				<option value=""' . ($enabled === null ? ' selected="selected"' : '') . '>' . _t('gen.short.no') . '</option>
 				<option value="1"' . ($enabled === true ? ' selected="selected"' : '') . '>' . _t('gen.short.yes') . '</option>
 			</select>
-			<p class="help">' . _i('help') . ' ' . _t('ext.feed_digest.feed_setting_help', 'Automatically summarize new articles from this feed and mark originals as read.') . '</p>
+			<p class="help">' . _i('help') . ' ' . _t('ext.feed_digest.feed_setting_help', 'Automatically summarize new articles from this feed into the AI Summaries feed. Originals are left untouched and keep their read state.') . '</p>
 		</div>
 	</div>
 
@@ -42,7 +42,7 @@ $our_fields = '
 			       value="' . $batchSize . '"
 			       min="1" max="50"
 			       class="w50" />
-			<p class="help">' . _i('help') . ' ' . _t('ext.feed_digest.batch_size_help', 'When set to 1: Each article gets a translated copy with summary prepended, original is marked as read. When > 1: Creates a combined summary article and marks originals as read.') . '</p>
+			<p class="help">' . _i('help') . ' ' . _t('ext.feed_digest.batch_size_help', 'This fork always uses 1: each article gets its own summary entry in the AI Summaries feed.') . '</p>
 		</div>
 	</div>
 
